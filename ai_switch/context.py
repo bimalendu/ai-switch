@@ -112,6 +112,7 @@ class Context:
         self.runner = runner or Runner()
         self.os_release = self._load_os_release()
         self._packages: Optional[Set[str]] = None
+        self.cache: Dict[str, object] = {}  # per-run memo for expensive queries
 
     # -- filesystem ---------------------------------------------------------
 

@@ -92,3 +92,14 @@ class RootTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.root = FakeRoot(self.distro)
         self.addCleanup(self.root.cleanup)
+
+
+class LiveContextMixin:
+    """Make a fake-root Context behave as a live system for command tests."""
+
+    @staticmethod
+    def live(ctx):
+        class Live(type(ctx)):
+            offline = property(lambda self: False)
+        ctx.__class__ = Live
+        return ctx
