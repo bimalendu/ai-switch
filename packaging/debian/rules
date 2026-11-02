@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+export PYBUILD_NAME=ai-switch
+
+%:
+	dh $@ --with python3
+
+override_dh_auto_build:
+
+override_dh_auto_test:
+	python3 -m unittest discover -s tests/unit -t .
+
+override_dh_auto_install:
+	$(MAKE) install-core DESTDIR=$(CURDIR)/debian/ai-switch PYLIB=/usr/lib/python3/dist-packages
+	$(MAKE) install-hooks DESTDIR=$(CURDIR)/debian/ai-switch HOOKS=apt
+	$(MAKE) install-gui DESTDIR=$(CURDIR)/debian/ai-switch-gui
+
+# The units are installed but never enabled or started: that is the user's choice.
+override_dh_installsystemd:
+	dh_installsystemd --no-enable --no-start --no-restart-after-upgrade

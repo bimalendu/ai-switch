@@ -2,7 +2,7 @@
 
 Explicitly turn system-level AI features on or off on major Linux distributions, and put things back exactly as they were.
 
-Status: Phases 0 to 6 of the plan are done (catalog, status, reversible disable/enable/revert/reconcile, modules, a six-distro container test matrix, package-manager hooks with a boot service and daily timer, and a GTK4/libadwaita window with a polkit-guarded helper). Packaging is not built yet. See `docs/catalog.md` for what was verified and what is still experimental.
+Status: all phases of the plan are done (catalog, status, reversible disable/enable/revert/reconcile, modules, a six-distro container test matrix, package-manager hooks with a boot service and daily timer, a GTK4/libadwaita window with a polkit-guarded helper, and local rpm/deb/Arch packages built and installed in containers). Nothing is published or signed. See `docs/catalog.md` for what was verified and what is still experimental.
 
 ```
 ai-switch status                       # read-only table of every AI feature
@@ -48,5 +48,12 @@ make test-containers   # needs podman: Fedora, Rocky 9, Ubuntu, Debian, openSUSE
 make test-hooks        # same containers: real package installs trigger the reconcile hook
                        #   PODMAN="podman --connection NAME" CONTAINERS="fedora arch"
 ```
+
+```
+make dist              # dist/ai-switch-VERSION.tar.gz from the working tree
+make test-packages     # build + install the rpm / deb / Arch packages in the containers
+```
+
+Packages: `packaging/ai-switch.spec`, `packaging/debian/`, `packaging/arch/PKGBUILD`. Each distro gets `ai-switch` (CLI and its package-manager hook) and `ai-switch-gui`.
 
 Adding a module: `docs/adding-a-module.md`.

@@ -1,0 +1,7 @@
+#!/usr/bin/python3 -I
+# Installed as /usr/bin/ai-switch-gui (needs GTK 4, libadwaita and PyGObject from the distro).
+import sys
+
+from ai_switch.gui import main
+
+sys.exit(main())

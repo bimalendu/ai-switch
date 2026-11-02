@@ -107,6 +107,20 @@ Not covered:
 - **libadwaita older than 1.9.** The code uses only 1.2 APIs (`ActionRow`, `MessageDialog`, `AboutWindow`) but was not run against 1.2, so the stated minimum of 1.2 is unproven (Ubuntu 24.04 and Debian 13 not tried either).
 - The "toggled" screenshot was skipped (a GTK render quirk in the test, not in the app).
 
+## Phase 7 results (2026-11-02)
+
+Three packagings of the same tree: `packaging/ai-switch.spec` (Fedora, RHEL and rebuilds, openSUSE), `packaging/debian/` (Debian, Ubuntu), `packaging/arch/PKGBUILD`. Each makes two packages: `ai-switch` (CLI, hook helper, units and the hook for that distro's package manager only) and `ai-switch-gui` (window, pkexec helper, polkit policy, desktop file). All use the `install-core`, `install-hooks` and `install-gui` Makefile targets. `make dist` builds `dist/ai-switch-VERSION.tar.gz` from the working tree. Licence: GPL-3.0-or-later (`LICENSE`). No URL is declared anywhere.
+
+`make test-packages` (`tests/containers/packages.sh`) builds the packages inside Fedora 44, Rocky 9.3, Ubuntu 24.04, Debian 13, openSUSE Tumbleweed and Arch (amd64 emulation), installs them with the native package manager, and checks: the installed `ai-switch status`/`--json status` work, only this distro's hook is installed, the timer and service are not enabled, `ai-switch disable local-llm-services`, a hand-deleted mask coming back after a real package transaction (the packaged hook fires), the GUI package's dependencies resolving and GTK 4 + libadwaita importing, the helper refusing `--all`, and a clean removal that leaves the user's change in place and says so.
+
+Bugs the container builds found: the dnf 4 plugin's `__pycache__` was unpackaged on RHEL; the GUI rpm asked for Fedora package names on SUSE (needs `typelib-1_0-Gtk-4_0`, `typelib-1_0-Adw-1`); Arch `makepkg` wanted `debugedit` until `options=(!debug)`; the build-time unit-test step piped through `tail`, which hid both the result and a failure, so it now runs unpiped (153 tests pass inside every package build).
+
+Not covered:
+- **No linters.** rpmlint, lintian and namcap were not run.
+- **Removal keeps choices.** Removing the package leaves masks, policy files and `/var/lib/ai-switch/state.json` in place (the removal prints a notice). Run `ai-switch revert` first to undo them.
+- **Unsigned, local only.** Nothing was signed or published. SLES/openSUSE Leap (where `%_libexecdir` may be `/usr/lib`) were not built.
+- **dnf 4 on RHEL 10, Fedora 41-42, Ubuntu 22.04, Debian 12** and non-amd64 Arch were not tried.
+
 ## Gaps for a later run
 
 - Real packages and booted systemd/snapd (containers cannot cover them), and browser probes.

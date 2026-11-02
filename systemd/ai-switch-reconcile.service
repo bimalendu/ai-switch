@@ -1,6 +1,5 @@
 [Unit]
 Description=Re-apply ai-switch AI-feature choices
-Documentation=https://github.com/ai-switch/ai-switch
 ConditionPathExists=/var/lib/ai-switch/state.json
 After=local-fs.target
 

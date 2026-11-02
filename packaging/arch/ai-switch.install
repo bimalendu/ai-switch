@@ -1,0 +1,6 @@
+pre_remove() {
+    if [ -s /var/lib/ai-switch/state.json ]; then
+        echo "ai-switch: removing the package keeps the changes it made (masked units, policy files)."
+        echo "ai-switch: to undo them, reinstall it and run 'ai-switch revert'."
+    fi
+}

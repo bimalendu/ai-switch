@@ -1,0 +1,30 @@
+Source: ai-switch
+Section: admin
+Priority: optional
+Maintainer: ai-switch packagers <ai-switch@localhost>
+Build-Depends: debhelper-compat (= 13), dh-python, python3
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: ai-switch
+Architecture: all
+Depends: ${python3:Depends}, ${misc:Depends}, python3 (>= 3.9)
+Description: explicitly turn system-level AI features on or off
+ ai-switch finds the AI features built into a Linux system (browser AI
+ policies, vendor assistants, local LLM services) and lets you turn each one
+ off or on with one explicit command. Every change is journaled with the state
+ before it, so "ai-switch revert" puts the system back exactly as it was.
+ Nothing changes without a command; packages are removed only with --purge.
+ .
+ An apt hook re-applies your choices after updates. It only acts when
+ ai-switch has changed something on the machine.
+
+Package: ai-switch-gui
+Architecture: all
+Depends: ai-switch (= ${binary:Version}), ${python3:Depends}, ${misc:Depends},
+ python3-gi, gir1.2-gtk-4.0, gir1.2-adw-1, pkexec
+Description: window for ai-switch, with a polkit-guarded helper
+ A GTK 4 / libadwaita window with one switch per AI feature. It runs without
+ privileges and changes things through pkexec and
+ /usr/libexec/ai-switch-helper, which accepts module ids only (no --purge,
+ --root or --all).

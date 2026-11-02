@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+if [ "$1" = remove ] && [ -s /var/lib/ai-switch/state.json ]; then
+    echo "ai-switch: removing the package keeps the changes it made (masked units, policy files)." >&2
+    echo "ai-switch: to undo them, reinstall it and run 'ai-switch revert'." >&2
+fi
+#DEBHELPER#

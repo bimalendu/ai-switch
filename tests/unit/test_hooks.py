@@ -1,4 +1,5 @@
 import configparser
+import glob
 import io
 import os
 import stat
@@ -152,6 +153,23 @@ class InstallTarget(unittest.TestCase):
         self.assertGreaterEqual(len(sources), 8, out)
         for src in sources:
             self.assertTrue(os.path.exists(path(src)), src)
+
+    def test_every_source_file_named_by_install_core_and_gui_exists(self):
+        for target in ("install-core", "install-gui"):
+            out = subprocess.run(["make", "-n", target, "DESTDIR=/nonexistent", "PYLIB=/py"], cwd=HERE,
+                                 stdout=subprocess.PIPE, universal_newlines=True).stdout
+            for word in out.split():
+                if word.startswith(("bin/", "data/")) or word.endswith(("/*.py", "/*.txt")):
+                    self.assertTrue(glob.glob(path(word)), (target, word))
+
+    def test_packaging_files_agree_on_the_version(self):
+        from ai_switch import __version__
+        with open(path("packaging", "ai-switch.spec")) as f:
+            self.assertIn("Version:        %s\n" % __version__, f.read())
+        with open(path("packaging", "arch", "PKGBUILD")) as f:
+            self.assertIn("pkgver=%s\n" % __version__, f.read())
+        with open(path("packaging", "debian", "changelog")) as f:
+            self.assertTrue(f.readline().startswith("ai-switch (%s)" % __version__))
 
     def test_dnf4_plugin_compiles_and_names_the_helper(self):
         with open(path("hooks", "dnf4", "ai_switch.py")) as f:

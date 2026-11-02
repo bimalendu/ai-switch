@@ -1,6 +1,5 @@
 [Unit]
 Description=Daily re-check of ai-switch AI-feature choices
-Documentation=https://github.com/ai-switch/ai-switch
 
 [Timer]
 OnCalendar=daily

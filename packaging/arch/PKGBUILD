@@ -1,0 +1,39 @@
+# Maintainer: ai-switch packagers <ai-switch@localhost>
+# Local build: `make dist`, copy dist/ai-switch-VERSION.tar.gz next to this file, `makepkg`.
+pkgbase=ai-switch
+pkgname=(ai-switch ai-switch-gui)
+pkgver=0.1.0
+pkgrel=1
+pkgdesc='Explicitly turn system-level AI features on or off, and put things back'
+arch=(any)
+options=(!debug)
+license=(GPL-3.0-or-later)
+makedepends=(make python)
+source=("$pkgbase-$pkgver.tar.gz")
+sha256sums=(SKIP)
+
+check() {
+  cd "$pkgbase-$pkgver"
+  python -m unittest discover -s tests/unit -t .
+}
+
+package_ai-switch() {
+  depends=(python)
+  install=ai-switch.install
+  cd "$pkgbase-$pkgver"
+  local pylib
+  pylib=$(python -c 'import sysconfig; print(sysconfig.get_path("purelib"))')
+  make install-core install-hooks DESTDIR="$pkgdir" PYLIB="$pylib" HOOKS=pacman
+  python -m compileall -q -s "$pkgdir" "$pkgdir$pylib/ai_switch"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -d "$pkgdir/usr/share/doc/$pkgname"
+  cp -r README.md docs "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+package_ai-switch-gui() {
+  pkgdesc='Window for ai-switch, with a polkit-guarded helper'
+  depends=("ai-switch=$pkgver" python-gobject gtk4 libadwaita polkit)
+  cd "$pkgbase-$pkgver"
+  make install-gui DESTDIR="$pkgdir"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
