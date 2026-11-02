@@ -12,6 +12,10 @@ readme = "README.md"
 [project.scripts]
 ai-switch = "ai_switch.cli:main"
 
+# Needs GTK4 + libadwaita (>= 1.2) + PyGObject from your distro; not a pip dependency.
+[project.gui-scripts]
+ai-switch-gui = "ai_switch.gui:main"
+
 [tool.setuptools]
 packages = ["ai_switch", "ai_switch.actions", "ai_switch.modules"]
 

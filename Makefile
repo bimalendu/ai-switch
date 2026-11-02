@@ -35,3 +35,11 @@ install-hooks:
 	  pacman) install -Dm644 hooks/pacman/ai-switch.hook $(DESTDIR)/usr/share/libalpm/hooks/ai-switch.hook ;; \
 	  zypper) install -Dm755 hooks/zypper/ai-switch $(DESTDIR)/usr/lib/zypp/plugins/commit/ai-switch ;; \
 	  *) echo "unknown hook set $$h"; exit 1 ;; esac; done
+
+# The GUI's privileged helper, polkit policy and launcher. The GUI runs the helper
+# through pkexec; polkit only allows that one executable (data/org.aiswitch.policy).
+.PHONY: install-gui
+install-gui:
+	install -Dm755 bin/ai-switch-helper $(DESTDIR)/usr/libexec/ai-switch-helper
+	install -Dm644 data/org.aiswitch.policy $(DESTDIR)/usr/share/polkit-1/actions/org.aiswitch.apply.policy
+	install -Dm644 data/org.aiswitch.AiSwitch.desktop $(DESTDIR)/usr/share/applications/org.aiswitch.AiSwitch.desktop

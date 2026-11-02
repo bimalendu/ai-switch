@@ -98,6 +98,15 @@ What it does **not** confirm: that real Firefox or Chrome honour the files (the 
 
 Not covered: the service and timer firing on a booted system (containers have no systemd PID 1), and PackageKit/Discover transactions (they use the same dnf/zypper/apt backends, but that was not tried).
 
+## Phase 6 results (2026-11-02)
+
+`tests/containers/gui_test.py` (run by `gui.sh`) drove the real GTK 4.22 / libadwaita 1.9 window on Fedora 44 under Xvfb, against fixtures on the container's real filesystem and through the real `ai_switch.helper` process: initial load, switch states, the pending-change set, Apply (Firefox blocked and locked, ollama masked), refresh, switching a feature back on, "Revert all changes", and the error page when `ai-switch` cannot run. 24 checks passed. The window and `data/org.aiswitch.policy` are also covered by unit tests (XML structure, the helper's refusals).
+
+Not covered:
+- **polkit itself.** `pkaction`/`pkexec` need a running polkitd and system bus, which the container does not have, so the policy was never loaded by polkit and no real password prompt was seen. The tests substitute the helper process for `pkexec`. The policy follows the pattern of quill-os's `org.quill.setup.policy`, but treat it as unverified until tried on a desktop.
+- **libadwaita older than 1.9.** The code uses only 1.2 APIs (`ActionRow`, `MessageDialog`, `AboutWindow`) but was not run against 1.2, so the stated minimum of 1.2 is unproven (Ubuntu 24.04 and Debian 13 not tried either).
+- The "toggled" screenshot was skipped (a GTK render quirk in the test, not in the app).
+
 ## Gaps for a later run
 
 - Real packages and booted systemd/snapd (containers cannot cover them), and browser probes.

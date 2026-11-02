@@ -2,7 +2,7 @@
 
 Explicitly turn system-level AI features on or off on major Linux distributions, and put things back exactly as they were.
 
-Status: Phases 0 to 5 of the plan are done (catalog, status, reversible disable/enable/revert/reconcile, modules, a six-distro container test matrix, and package-manager hooks with a boot service and daily timer). The GUI and packaging are not built yet. See `docs/catalog.md` for what was verified and what is still experimental.
+Status: Phases 0 to 6 of the plan are done (catalog, status, reversible disable/enable/revert/reconcile, modules, a six-distro container test matrix, package-manager hooks with a boot service and daily timer, and a GTK4/libadwaita window with a polkit-guarded helper). Packaging is not built yet. See `docs/catalog.md` for what was verified and what is still experimental.
 
 ```
 ai-switch status                       # read-only table of every AI feature
@@ -11,6 +11,7 @@ sudo ai-switch disable --all --lock    # --lock: users cannot re-enable (Firefox
 sudo ai-switch enable firefox          # actively turn it on again
 sudo ai-switch revert                  # put back what was there before ai-switch
 sudo ai-switch reconcile               # re-apply choices after a package update
+ai-switch-gui                          # the same, as a window (GTK4/libadwaita, asks for a password via polkit)
 ```
 
 Global options: `--root DIR` works on an offline image or any directory tree, `--json` gives machine-readable output, `--yes` skips the confirmation prompt. Exit codes: 0 ok, 1 a change failed, 2 usage error, 3 needs root.

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=AI Switch
+GenericName=AI feature settings
+Comment=Turn system-level AI features on or off
+Exec=ai-switch-gui
+Icon=preferences-system
+Terminal=false
+Categories=Settings;System;GTK;
+Keywords=AI;Copilot;Gemini;assistant;privacy;
+StartupNotify=true

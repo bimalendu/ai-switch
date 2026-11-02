@@ -1,0 +1,8 @@
+#!/usr/bin/python3 -I
+# Installed as /usr/libexec/ai-switch-helper, the only program polkit lets the
+# GUI run as root. -I ignores PYTHON* variables and the current directory.
+import sys
+
+from ai_switch.helper import main
+
+sys.exit(main())

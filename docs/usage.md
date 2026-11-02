@@ -53,6 +53,12 @@ Installing the hooks does not switch the timer or boot service on. That is a sys
 
 Reconcile only re-applies "off" choices for modules you disabled. If you later install a new browser, the module's choice applies to it too.
 
+## The window
+
+`ai-switch-gui` opens a window with one row per feature: a switch (on means the AI feature is on), a badge with its state, and a note when the module is experimental. Rows for features that are not installed, that ai-switch cannot read, or that are report-only have no working switch. Nothing changes until you press **Apply**. The menu has **Revert all changes…**. "Lock where possible" applies to Firefox only.
+
+The window runs unprivileged and only reads `ai-switch --json status`. To change anything it runs `pkexec /usr/libexec/ai-switch-helper`, and polkit asks for an administrator password. The helper is not the full CLI: it takes module ids only, and refuses `--purge`, `--root`, `--all` and anything else, so authorising the GUI cannot remove software or touch other trees. Install the pieces with `make install-gui`; it needs GTK 4, libadwaita 1.2 or newer and PyGObject from your distro.
+
 ## Offline images
 
 ```
