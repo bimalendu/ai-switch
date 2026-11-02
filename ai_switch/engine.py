@@ -54,8 +54,12 @@ def plan_change(ctx: Context, mods: Sequence[Module], op: str, lock: bool = Fals
             continue
         if not m.report_only:
             for a in m.actions(ctx):
-                if a.present(ctx):
-                    items.append(PlanItem(m, a, op, lock))
+                if not a.present(ctx):
+                    continue
+                if a.kind == "unsupported":
+                    plan.notes.append("%s: %s" % (m.id, a.describe_off(lock)))
+                    continue
+                items.append(PlanItem(m, a, op, lock))
         if purge and op == OP_OFF:
             for a in m.purge_actions(ctx):
                 if a.present(ctx):

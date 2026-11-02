@@ -79,8 +79,10 @@ class PolicyJsonMerge(Action):
 
     def __init__(self, key: str, label: str, path: str,
                  installed: Callable[[Context], bool],
-                 off: Payload, on: Payload, reader: Reader):
+                 off: Payload, on: Payload, reader: Reader,
+                 precheck: Optional[Callable[[Context], None]] = None):
         super().__init__(key, label)
+        self._precheck = precheck
         self.path = path
         self._installed = installed
         self._off, self._on, self._reader = off, on, reader
@@ -144,6 +146,8 @@ class PolicyJsonMerge(Action):
                 "paths": [list(p) for p in paths], "created_dirs": created}
 
     def to_off(self, ctx: Context, lock: bool) -> Dict[str, Any]:
+        if self._precheck is not None:
+            self._precheck(ctx)  # may raise ActionError before anything changes
         return self._apply(ctx, self._off(lock))
 
     def to_on(self, ctx: Context) -> Dict[str, Any]:

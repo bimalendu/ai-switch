@@ -162,10 +162,12 @@ def cmd_change(args: argparse.Namespace, ctx: Context, mods: Sequence[Module]) -
     lines += ["  note: " + n for n in plan.notes]
     if plan.irreversible:
         lines.append("WARNING: removals cannot be reverted by 'ai-switch revert'.")
+    seen = set()
     for i in plan.items:
-        if i.module.experimental:
-            lines.append("  note: %s is experimental; see docs/catalog.md" % i.module.id)
-            break
+        if (i.module.experimental or i.action.experimental) and i.module.id not in seen:
+            seen.add(i.module.id)
+            lines.append("  note: %s is experimental (not fully verified); see docs/catalog.md"
+                         % i.module.id)
     if args.dry_run:
         _emit(args, {"dry_run": True, "plan": [{"module": i.module.id, "action": i.action.key,
                                                   "op": i.op, "what": i.describe()}

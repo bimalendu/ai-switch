@@ -1,0 +1,39 @@
+# Known AI applications (report-only; removal needs `disable --purge`).
+#
+# Seeded from quill-os policy/ai-denylist.txt (decided 2026-10-30). Scope:
+# generative and assistant AI, meaning chatbots, LLM assistants, local LLM
+# runtimes and servers, and AI agents. Classical ML that does one fixed local
+# job (Tesseract OCR, eSpeak, input prediction) is not listed.
+#
+# Format, one entry per line (inline # comments allowed):
+#   any: <name or shell glob>    matched on every package manager
+#   rpm: <name or shell glob>    only on rpm-based distros (Fedora, RHEL, SUSE),
+#                                where these names were checked. Short names such
+#                                as "goose" mean other things on other distros.
+#   flatpak: <application id>    system-wide Flatpak apps
+# Keep globs narrow: "copilot*" would match Haskell's ghc-copilot-* packages.
+
+# --- any package manager --------------------------------------------------------
+any: ollama                  # local LLM runtime and server
+any: open-webui
+any: gpt4all*
+
+# --- rpm family, verified in Fedora 44 (quill-os, 2026-10-30) ---------------------
+rpm: llama-cpp               # LLM inference engine
+rpm: llama-cpp-*
+rpm: python3-llama-cpp-python
+rpm: kaichat                 # chat interface for AI models such as ollama
+rpm: goose                   # extensible AI agent client
+rpm: agr                     # package manager for AI agents
+rpm: openqa-llm-server       # local LLM server for openQA workers
+
+# --- rpm family, prospective ----------------------------------------------------
+rpm: alpaka                  # KDE client for Ollama
+rpm: claude-code
+rpm: gemini-cli
+rpm: aichat
+
+# --- Flatpak, verified on Flathub (quill-os, 2026-10-30) -------------------------
+flatpak: com.jeffser.Alpaca  # chat with AI models
+flatpak: io.gpt4all.gpt4all  # open-source assistant
+flatpak: ai.jan.Jan          # private offline AI assistant

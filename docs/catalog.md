@@ -26,7 +26,7 @@ Policy definitions read from `chromium/components/policy/resources/templates/pol
 
 | Policy | Disabling value | Note |
 |---|---|---|
-| `GenAiDefaultSettings` | 2 | Default for covered features. Documented as cloud-only, so a machine policy file may be ignored. Written anyway, never relied on. |
+| `GenAiDefaultSettings` | 2 | **Not written.** Documented as cloud-only, so Chrome would flag it as an error when set from a file. The individual policies below cover the same features. |
 | `GeminiSettings` | 1 | Chrome 137+ (Windows/macOS listed; Linux not named) |
 | `AIModeSettings` | 1 | Chrome 138+, all platforms |
 | `HelpMeWriteSettings` | 2 | Chrome 121+ |
@@ -42,7 +42,7 @@ Skipped on purpose: `TabOrganizerSettings` (deprecated, sunset), `HistorySearchS
 
 Unknown policies are ignored by Chrome, so writing a key an older build doesn't know is harmless. Chrome's `chrome.*` platform wildcard probably covers Linux, but Linux is not named in the source. The Chrome entry is therefore verified on names and values, and partial on Linux scope.
 
-Managed policy directories on Linux (partial, from vendor convention): Chrome `/etc/opt/chrome/policies/managed/`, Chromium `/etc/chromium/policies/managed/`, Edge `/etc/opt/edge/policies/managed/`, Brave `/etc/brave/policies/managed/` (Brave help article confirms the Brave path), Vivaldi `/etc/vivaldi/policies/managed/` (unverified).
+Managed policy directories on Linux (partial, from vendor convention): Chrome `/etc/opt/chrome/policies/managed/`, Chromium `/etc/chromium/policies/managed/`, Edge `/etc/opt/edge/policies/managed/`, Brave `/etc/brave/policies/managed/` (Brave help article confirms the Brave path). Vivaldi is **not in v1**: its managed-policy path was not confirmed.
 
 Edge (**experimental**): `GenAILocalFoundationalModelSettings` 1 (documented, Windows/macOS only), `HubsSidebarEnabled` false (Windows/macOS documented), `CopilotPageContext` false, `Microsoft365CopilotChatIconEnabled` false (the only toolbar Copilot control since Edge 141). The Edge pages do not document Linux.
 
@@ -55,16 +55,18 @@ Sources:
 - https://support.brave.app/hc/en-us/articles/360039248271 (search result; page returned 403 to fetch)
 - https://justthebrowser.com/brave
 
+Implementation: `modules/chromium.py` writes `<managed dir>/ai-switch.json` only for browsers whose binary is found. A matching file is reported as `off (locked)` because managed policies are mandatory. Other files in the same directory that set the same keys are not evaluated.
+
 ## rhel-lightspeed: partial
 
-- Package `command-line-assistant`, daemon `clad`, unit `clad.service` (Copr spec files for `command-line-assistant` 0.1.0 to 0.3.0). A later changelog says the units became socket-activated, so a `clad.socket` may exist. The module masks `clad.service` and `clad.socket` if present.
+- Package `command-line-assistant`, daemon `clad`, unit `clad.service` (Copr spec files for `command-line-assistant` 0.1.0 to 0.3.0). A later changelog says the units became socket-activated, so a `clad.socket` may exist. The module masks `clad.service` and `clad.socket` if present, plus any units the package database says `command-line-assistant` ships.
 - Red Hat docs: `systemctl restart clad`, config in `/etc/xdg/command-line-assistant/config.toml`.
 - The offline variant (`rhel-cla`, `rhel-lightspeed` command) runs containers and can install an optional systemd service. Its unit name was not found. Not covered in v1.
 - Sources: https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/interacting_with_the_command-line_assistant_powered_by_rhel_lightspeed/ and the Copr spec at https://copr-be.cloud.fedoraproject.org/results/%40rhel-lightspeed/command-line-assistant/epel-9-x86_64/08702030-command-line-assistant/command-line-assistant.spec
 
 ## suse-ai: unverified (experimental)
 
-SLES 16 (GA 2025-11-04) ships MCP host and server components as a technology preview, with AI-assisted management in Cockpit. No official page names the packages or units. A third-party Trento guide installs `mcphost` with zypper. The module therefore only acts on candidate units that exist on the system: `mcphost.service`. Sources: https://www.suse.com/products/server/ai, https://emaksy.github.io/docs/mcp-server/Trento%20MCP%20Server%20documentation/integration-sles.html. Must be confirmed with `rpm -ql` on a real SLES 16 system.
+SLES 16 (GA 2025-11-04) ships MCP host and server components as a technology preview, with AI-assisted management in Cockpit. No official page names the packages or units. A third-party Trento guide installs `mcphost` with zypper. The module therefore only acts on `mcphost.service` and units shipped by an installed `mcphost` package, and only if they exist. Sources: https://www.suse.com/products/server/ai, https://emaksy.github.io/docs/mcp-server/Trento%20MCP%20Server%20documentation/integration-sles.html. Must be confirmed with `rpm -ql` on a real SLES 16 system.
 
 ## ubuntu-inference: verified for snap names, unverified for services
 
@@ -72,11 +74,11 @@ Canonical's inference snaps (announced 2025-10-23, 21 snaps listed on 2026-11-02
 
 ## deepin-uos-ai: partial (experimental)
 
-Package names `uos-ai`, `deepin-modelhub`, `uos-ai-rag` (guide at kitemetric.com). No systemd unit or autostart entry name was found. The module reports installed packages and only acts on units and autostart files it finds by those package names. Must be confirmed with `dpkg -L uos-ai` on deepin.
+Package names `uos-ai`, `deepin-modelhub`, `uos-ai-rag` (guide at kitemetric.com). No systemd unit or autostart entry name was found. The module masks the system units that the package database lists for those three packages (`dpkg-query -L`), so it does not guess names. Autostart entries are **not** handled yet. Must be confirmed with `dpkg -L uos-ai` on deepin.
 
 ## local-llm-services: partial
 
-System units for ollama (`ollama.service`, the unit shipped by the upstream installer and Fedora/Arch packages), llama.cpp (`llama-cpp.service`, `llama-server.service`), LocalAI (`local-ai.service`), and open-webui (`open-webui.service`). Unit names come from common packaging and are not verified against a specific package. The module masks only units that exist.
+System units for ollama (`ollama.service`, the unit shipped by the upstream installer and Fedora/Arch packages), llama.cpp (`llama-cpp.service`, `llama-server.service`), LocalAI (`local-ai.service`), and open-webui (`open-webui.service`). Unit names come from common packaging and are not verified against a specific package. The module masks only units that exist, plus units shipped by installed packages of those names. Known gap: if an admin or the upstream installer wrote the unit as a real file in `/etc/systemd/system` (the ollama install script does), ai-switch refuses to replace it with a mask and says so. Use `systemctl disable --now` yourself in that case.
 
 ## known-ai-apps: seeded from quill-os
 
@@ -86,4 +88,5 @@ Denylist `data/known-ai-apps.txt` is seeded from `quill-os/policy/ai-denylist.tx
 
 - Real distro verification in containers (Phase 4).
 - SUSE, deepin and Edge-on-Linux need a real install to confirm.
-- Firefox snap and Flatpak policy paths.
+- Firefox snap policy path (written to `/etc/firefox/policies/` as an experimental best guess) and Flatpak (detected, reported `unknown`, never written).
+- deepin autostart entries; `/etc`-resident vendor units (see local-llm-services).

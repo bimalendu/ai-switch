@@ -54,6 +54,7 @@ class Action:
 
     kind = "action"
     irreversible = False  # True for package/snap removal
+    experimental = False  # mechanism not fully verified, see docs/catalog.md
 
     def __init__(self, key: str, label: str):
         self.key = key

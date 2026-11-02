@@ -245,6 +245,48 @@ class Context:
         self._packages = names
         return names
 
+    def package_files(self, name: str) -> List[str]:
+        """Absolute paths a package installed (from the package database)."""
+        key = "files:" + name
+        if key in self.cache:
+            return self.cache[key]  # type: ignore[return-value]
+        pm, root = self.pkg_manager, str(self.root)
+        if pm in ("dnf", "zypper"):
+            argv = ["rpm", "-ql", name]
+            if self.offline:
+                argv[1:1] = ["--root", root]
+        elif pm == "apt":
+            argv = ["dpkg-query", "-L", name]
+            if self.offline:
+                argv[1:1] = ["--admindir", str(self.path("/var/lib/dpkg"))]
+        elif pm == "pacman":
+            argv = ["pacman", "-Qlq", name]
+            if self.offline:
+                argv[1:1] = ["--root", root]
+        else:
+            argv = []
+        files: List[str] = []
+        if argv:
+            res = self.run(argv)
+            if res.ok:
+                files = [l.strip().split(" ", 1)[-1] if pm == "pacman" else l.strip()
+                         for l in res.stdout.splitlines() if l.strip().startswith("/") or pm == "pacman"]
+        self.cache[key] = files
+        return files
+
+    def units_of_packages(self, names: Sequence[str]) -> List[str]:
+        """System unit names (.service/.socket/.timer) shipped by installed packages."""
+        units: List[str] = []
+        for name in names:
+            for f in self.package_files(name):
+                parts = f.split("/")
+                if (len(parts) >= 2 and parts[-2] == "system" and "systemd" in parts
+                        and parts[-1].endswith((".service", ".socket", ".timer"))
+                        and "@" not in parts[-1]):
+                    if parts[-1] not in units:
+                        units.append(parts[-1])
+        return units
+
     def packages_matching(self, globs: Sequence[str]) -> List[str]:
         found = set()
         for name in self.installed_packages():

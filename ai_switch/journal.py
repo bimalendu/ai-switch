@@ -65,8 +65,10 @@ class Journal:
 
     def save(self) -> None:
         self._ensure_dir()
-        if self._created and "created_dirs" not in self.data:
-            self.data["created_dirs"] = list(self._created)
+        known = self.data.setdefault("created_dirs", [])
+        for d in self._created:
+            if d not in known:
+                known.append(d)
         tmp = self.path.with_name(self.path.name + ".tmp")
         tmp.write_text(json.dumps(self.data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         os.replace(str(tmp), str(self.path))
@@ -105,6 +107,12 @@ class Journal:
         Returns True if a new entry was written."""
         if self.find(module, key) is not None:
             return False
+        # Directories an action had to create may only become removable once
+        # *other* modules are reverted too, so remember them for the final sweep.
+        known = self.data.setdefault("created_dirs", [])
+        for d in (before.get("created_dirs") or []) if isinstance(before, dict) else []:
+            if d not in known:
+                known.append(d)
         self.data["changes"].append({
             "module": module,
             "key": key,
@@ -158,5 +166,6 @@ class Journal:
                 p.unlink()
         with contextlib.suppress(OSError):
             self.path.parent.rmdir()
-        fsutil.remove_created_dirs(self.data.get("created_dirs", [])[:-1]
-                                   if self.data.get("created_dirs") else [])
+        for d in sorted(self.data.get("created_dirs", []), key=len, reverse=True):
+            with contextlib.suppress(OSError):
+                os.rmdir(d)  # only succeeds when empty
