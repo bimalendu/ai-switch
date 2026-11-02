@@ -2,7 +2,7 @@
 
 Explicitly turn system-level AI features on or off on major Linux distributions, and put things back exactly as they were.
 
-Status: Phases 0 to 3 of the plan are done (catalog, status, reversible disable/enable/revert/reconcile, modules). The GUI, package-manager hooks, container test matrix and packaging are not built yet. See `docs/catalog.md` for what was verified and what is still experimental.
+Status: Phases 0 to 4 of the plan are done (catalog, status, reversible disable/enable/revert/reconcile, modules, and a six-distro container test matrix). The package-manager hooks, GUI and packaging are not built yet. See `docs/catalog.md` for what was verified and what is still experimental.
 
 ```
 ai-switch status                       # read-only table of every AI feature
@@ -42,7 +42,9 @@ A module that finds nothing on your system shows `not present`.
 Python 3.9+, standard library only.
 
 ```
-make test        # compile check + unit tests against fake root trees (runs on macOS)
+make test              # compile check + unit tests against fake root trees (runs on macOS)
+make test-containers   # needs podman: Fedora, Rocky 9, Ubuntu, Debian, openSUSE, Arch
+                       #   PODMAN="podman --connection NAME" CONTAINERS="fedora arch"
 ```
 
 Adding a module: `docs/adding-a-module.md`.

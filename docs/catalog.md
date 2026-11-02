@@ -84,9 +84,17 @@ System units for ollama (`ollama.service`, the unit shipped by the upstream inst
 
 Denylist `data/known-ai-apps.txt` is seeded from `quill-os/policy/ai-denylist.txt` (decided 2026-10-30) plus the inference snap names above. Report-only. Removal needs `--purge`.
 
+## Phase 4 results (2026-11-02)
+
+`make test-containers` ran `tests/containers/matrix.py` in one container per distro, driving the real CLI against synthetic installs (fake unit files, a fake Firefox with a policy schema, a fake Chrome) with the distro's real package manager answering queries. All six passed: Fedora 44, Rocky 9.3 (Python 3.9.18, the minimum supported), Ubuntu 24.04, Debian 13, openSUSE Tumbleweed, Arch (amd64 emulation, as Arch publishes no arm64 image).
+
+What this confirms: distro and package-manager detection, real `rpm`/`dpkg-query`/`pacman` queries, status, dry-run, disable, reconcile after a simulated update, enable, and revert leaving `/etc`, `/opt`, `/usr/lib/systemd` and the Firefox dirs byte-identical. On Arch, the real `systemctl --root=/ is-enabled` reported the masked unit as `masked`, and `pacman -Ql` unit discovery worked. The matrix found one real bug (a pre-existing Firefox policy file was not restored byte-for-byte after a toggle with a different `--lock`), fixed with a unit test.
+
+What it does **not** confirm: that real Firefox or Chrome honour the files (the Marionette and `chrome://policy` probes are not built), real `clad`, `ollama`, `mcphost` or `uos-ai` packages, a booted systemd (the containers have none, so `systemctl stop` and `daemon-reload` are not exercised), and `snap` behaviour. Those need a VM or real hosts.
+
 ## Gaps for a later run
 
-- Real distro verification in containers (Phase 4).
+- Real packages and booted systemd/snapd (containers cannot cover them), and browser probes.
 - SUSE, deepin and Edge-on-Linux need a real install to confirm.
 - Firefox snap policy path (written to `/etc/firefox/policies/` as an experimental best guess) and Flatpak (detected, reported `unknown`, never written).
 - deepin autostart entries; `/etc`-resident vendor units (see local-llm-services).

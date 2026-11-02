@@ -66,6 +66,13 @@ def delete_path(obj: Dict[str, Any], path: Path_) -> None:
             break
 
 
+def _same_json(data: Dict[str, Any], text: Optional[str]) -> bool:
+    try:
+        return text is not None and json.loads(text) == data
+    except ValueError:
+        return False
+
+
 def _dump(data: Dict[str, Any]) -> str:
     return json.dumps(data, indent=2) + "\n"
 
@@ -180,6 +187,9 @@ class PolicyJsonMerge(Action):
         if not before["existed"] and data in ({}, {"policies": {}}):
             f.unlink()
             fsutil.remove_created_dirs(before.get("created_dirs", []))
+        elif before["existed"] and _same_json(data, before["orig_text"]):
+            # Back to the original content: restore the original bytes too.
+            fsutil.write_atomic(f, before["orig_text"])
         else:
             fsutil.write_atomic(f, _dump(data))
         return "reverted our keys in %s (file had other edits, kept them)" % self.path

@@ -166,6 +166,15 @@ class PolicyJsonTests(RootTestCase):
         self.act.undo(self.ctx, rec)
         self.assertEqual(self.root.snapshot(), before)
 
+    def test_toggle_with_changed_lock_still_restores_original_bytes(self):
+        original = '{"policies": {"DisableAppUpdate": true}}\n'  # compact, not our format
+        self.root.write(FF_PATH, original)
+        rec = self.act.to_off(self.ctx, True)
+        self.act.to_on(self.ctx)
+        self.act.to_off(self.ctx, False)  # different bytes than the baseline write
+        self.act.undo(self.ctx, rec)
+        self.assertEqual(self.file.read_text(), original)
+
     def test_invalid_json_is_refused_untouched(self):
         self.root.write(FF_PATH, "{not json")
         with self.assertRaises(ActionError):
