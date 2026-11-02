@@ -1,0 +1,11 @@
+#!/bin/bash
+# zypper commit plugin: re-apply ai-switch choices after a transaction.
+# Protocol: frames end with an empty line and a NUL byte; every frame gets an
+# ACK. stdout belongs to the protocol, so the hook's output is discarded.
+while IFS= read -r -d '' frame; do
+    case "${frame%%$'\n'*}" in
+        COMMITEND) /usr/libexec/ai-switch-hook >/dev/null 2>&1 </dev/null ;;
+    esac
+    printf 'ACK\n\n\0'
+done
+exit 0

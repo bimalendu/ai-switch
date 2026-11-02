@@ -1,7 +1,8 @@
 #!/bin/sh
 # Host side: run tests/containers/matrix.py in one container per distro.
 # Usage: run-matrix.sh [name...]   (default: all)
-# Env:   PODMAN="podman --connection foo" to pick a machine.
+# Env:   SCRIPT=hooks.sh runs the package-hook check instead of the main matrix.
+#        PODMAN="podman --connection foo" to pick a machine.
 set -u
 here=$(cd "$(dirname "$0")/../.." && pwd)
 PODMAN=${PODMAN:-podman}
@@ -24,7 +25,7 @@ for row in $(echo "$MATRIX" | tr ' ' '_'); do
     if [ -n "$want" ] && ! echo " $want " | grep -q " $name "; then continue; fi
     echo "=================== $name ($image)"
     if $PODMAN run --rm $extra -v "$here:/src:ro,Z" -e PYTHONDONTWRITEBYTECODE=1 "$image" \
-            sh /src/tests/containers/in-container.sh "$pm"; then
+            sh "/src/tests/containers/${SCRIPT:-in-container.sh}" "$pm"; then
         echo ">>> $name: OK"
     else
         echo ">>> $name: FAILED"; rc=1

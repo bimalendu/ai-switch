@@ -1,0 +1,21 @@
+#!/bin/sh
+# Called by package-manager hooks after a transaction: re-apply the user's
+# ai-switch choices if a package update undid them.
+#
+# Never fails and never writes to stdout, so it cannot break a transaction or
+# corrupt a plugin protocol (zypper talks to its plugins over stdout). Does
+# nothing unless ai-switch has changed something on this machine.
+#
+# AI_SWITCH_BIN / AI_SWITCH_STATE exist for tests.
+bin=${AI_SWITCH_BIN:-ai-switch}
+state=${AI_SWITCH_STATE:-/var/lib/ai-switch/state.json}
+
+[ -e "$state" ] || exit 0
+command -v "$bin" >/dev/null 2>&1 || exit 0
+
+if command -v logger >/dev/null 2>&1; then
+    "$bin" reconcile --quiet 2>&1 | logger -t ai-switch >/dev/null 2>&1
+else
+    "$bin" reconcile --quiet >/dev/null 2>&1
+fi
+exit 0

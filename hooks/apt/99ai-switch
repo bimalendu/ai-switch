@@ -1,0 +1,3 @@
+// ai-switch: re-apply the user's AI-feature choices after dpkg runs.
+// The helper never fails and does nothing unless ai-switch changed something.
+DPkg::Post-Invoke { "[ -x /usr/libexec/ai-switch-hook ] && /usr/libexec/ai-switch-hook || true"; };

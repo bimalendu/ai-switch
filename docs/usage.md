@@ -39,7 +39,19 @@ sudo ai-switch revert             # everything
 
 ## After updates
 
-A package update can replace a policy file or unit. `ai-switch reconcile` re-applies every "off" choice that was undone. Package-manager hooks that run it automatically are planned for a later phase; until then run it yourself or from a cron job or systemd timer.
+A package update can replace a policy file or unit. `ai-switch reconcile` re-applies every "off" choice that was undone. Three things run it for you, once installed (`make install-hooks`, or the packages in a later phase):
+
+| Trigger | Where |
+|---|---|
+| right after every package transaction | dnf 5 actions (Fedora 41+), dnf 4 plugin (RHEL 9/10), apt `DPkg::Post-Invoke`, pacman hook, zypper commit plugin |
+| daily | `ai-switch-reconcile.timer` |
+| at boot | `ai-switch-reconcile.service` |
+
+All of them go through `/usr/libexec/ai-switch-hook`, which does nothing unless ai-switch has changed something on the machine, never fails the package transaction, and logs to the journal under the tag `ai-switch`.
+
+Installing the hooks does not switch the timer or boot service on. That is a system change, so you do it: `sudo systemctl enable --now ai-switch-reconcile.timer ai-switch-reconcile.service`.
+
+Reconcile only re-applies "off" choices for modules you disabled. If you later install a new browser, the module's choice applies to it too.
 
 ## Offline images
 

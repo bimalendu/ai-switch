@@ -92,6 +92,12 @@ What this confirms: distro and package-manager detection, real `rpm`/`dpkg-query
 
 What it does **not** confirm: that real Firefox or Chrome honour the files (the Marionette and `chrome://policy` probes are not built), real `clad`, `ollama`, `mcphost` or `uos-ai` packages, a booted systemd (the containers have none, so `systemctl stop` and `daemon-reload` are not exercised), and `snap` behaviour. Those need a VM or real hosts.
 
+## Phase 5 results (2026-11-02)
+
+`make test-hooks` installs the hook for the distro's package manager in a container, runs a real package install, and checks that `ai-switch reconcile --quiet` ran exactly once. It also checks that nothing runs without a journal and that a failing `ai-switch` does not fail the transaction. All six passed: dnf 5 (Fedora 44), dnf 4 (Rocky 9.3, Python plugin), apt (Ubuntu 24.04, Debian 13), zypper commit plugin (Tumbleweed) and pacman hook (Arch). `systemd-analyze verify` accepted both units on Arch (the only image that ships it).
+
+Not covered: the service and timer firing on a booted system (containers have no systemd PID 1), and PackageKit/Discover transactions (they use the same dnf/zypper/apt backends, but that was not tried).
+
 ## Gaps for a later run
 
 - Real packages and booted systemd/snapd (containers cannot cover them), and browser probes.

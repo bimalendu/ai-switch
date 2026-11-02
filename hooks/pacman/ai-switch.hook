@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Re-applying ai-switch choices...
+When = PostTransaction
+Exec = /usr/libexec/ai-switch-hook

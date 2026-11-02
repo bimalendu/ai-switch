@@ -50,8 +50,10 @@ def build_parser() -> argparse.ArgumentParser:
     rv.add_argument("ids", nargs="*", metavar="ID", help="default: everything ai-switch changed")
     rv.add_argument("--yes", "-y", action="store_true")
 
-    sub.add_parser("reconcile",
-                   help="re-apply 'off' choices that a package update undid (used by hooks)")
+    rc = sub.add_parser("reconcile",
+                        help="re-apply 'off' choices that a package update undid (used by hooks)")
+    rc.add_argument("--quiet", "-q", action="store_true",
+                    help="print nothing unless something was re-applied or failed")
     return p
 
 
@@ -225,7 +227,9 @@ def cmd_reconcile(args: argparse.Namespace, ctx: Context, mods: Sequence[Module]
     with journal.locked():
         results = engine.reconcile(ctx, journal, mods)
     if not results:
-        _emit(args, {"ok": True, "results": []}, ["Nothing to reconcile: all choices still in effect."])
+        if not args.quiet:
+            _emit(args, {"ok": True, "results": []},
+                  ["Nothing to reconcile: all choices still in effect."])
         return EXIT_OK
     return _print_results(args, results)
 

@@ -1,0 +1,5 @@
+# ai-switch: after every package transaction, re-apply the AI-feature choices
+# the user made (a Firefox or Chrome update can replace a policy file).
+# host-only: not run for --installroot transactions (image builds).
+# dnf 4 (RHEL 9/10) has no actions plugin: it relies on the daily timer instead.
+post_transaction:::enabled=host-only:/usr/libexec/ai-switch-hook
